@@ -15,8 +15,8 @@ const {
 } = require('../controllers/journey');
 const {
 	getUserBookmarks,
-	addUserBookmark,
-	deleteUserBookmark,
+	addOrDeleteUserBookmark,
+	getUserBookmarksId,
 } = require('../controllers/bookmark');
 
 //* --------------------------  AUTH  ---------------------------- *//
@@ -34,7 +34,7 @@ router.delete('/journey/:id', auth, deleteJourney);
 
 //* -----------------------  BOOKMARK ROUTE  ------------------------- *//
 router.get('/my-bookmarks', auth, getUserBookmarks);
-router.post('/bookmark', auth, addUserBookmark);
-router.delete('/bookmark/:id', auth, deleteUserBookmark);
+router.get('/my-bookmarksId', auth, getUserBookmarksId);
+router.post('/bookmark', auth, addOrDeleteUserBookmark);
 
 module.exports = router;

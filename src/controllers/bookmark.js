@@ -15,7 +15,7 @@ const errorResponse = (err, res) => {
 	res.status(500).send({ error: { message: 'Server Error' } });
 };
 
-//*-------------------------------------------- Get User Bookmarks --------------------------------------------*//
+//*-------------------------------------------- Get User Bookmarks Data --------------------------------------------*//
 exports.getUserBookmarks = async (req, res) => {
 	try {
 		const { id } = req.user;
@@ -23,7 +23,7 @@ exports.getUserBookmarks = async (req, res) => {
 			where: {
 				userId: id,
 			},
-			attributes: ['journeyId'],
+			attributes: ['id', 'journeyId'],
 			include: {
 				model: Journey,
 				attributes: {
@@ -39,11 +39,11 @@ exports.getUserBookmarks = async (req, res) => {
 		});
 
 		if (bookmarks.length < 1) {
-			return res.status(204);
+			return res.status(204).send();
 		} else {
 			res.send({
 				status: success,
-				message: messageSuccess('Get User Bookmarks'),
+				message: messageSuccess('Get User Bookmarks Data'),
 				data: { bookmarks },
 			});
 		}
@@ -52,27 +52,69 @@ exports.getUserBookmarks = async (req, res) => {
 	}
 };
 
-//*-------------------------------------------- Add User Bookmark --------------------------------------------*//
-exports.addUserBookmark = async (req, res) => {
+//*-------------------------------------------- Get User Bookmarks Id --------------------------------------------*//
+exports.getUserBookmarksId = async (req, res) => {
 	try {
-		const { body, user } = req;
-		const userId = user.id;
-		const journeyId = body.id;
-		const bookmark = await Bookmark.create({ journeyId, userId });
-
-		res.status(201).send({
-			status: success,
-			message: messageSuccess('Add Bookmark'),
-			data: {
-				bookmark,
+		const { id } = req.user;
+		const bookmarks = await Bookmark.findAll({
+			where: {
+				userId: id,
 			},
+			attributes: ['journeyId'],
 		});
+
+		if (bookmarks.length < 1) {
+			return res.status(204).send();
+		} else {
+			res.send({
+				status: success,
+				message: messageSuccess('Get User Bookmarks Id'),
+				data: { bookmarks },
+			});
+		}
 	} catch (err) {
 		errorResponse(err, res);
 	}
 };
 
-//*-------------------------------------------- Delete Journey --------------------------------------------*//
+//*---------------------------------------- Add / Delete User Bookmark --------------------------------------------*//
+exports.addOrDeleteUserBookmark = async (req, res) => {
+	try {
+		const { body, user } = req;
+		const userId = user.id;
+		const journeyId = body.id;
+
+		const ifBookmarkExist = await Bookmark.findOne({
+			where: { journeyId, userId },
+		});
+
+		if (!ifBookmarkExist) {
+			const bookmark = await Bookmark.create({ journeyId, userId });
+			return res.status(201).send({
+				status: success,
+				message: messageSuccess('Add Bookmark'),
+				data: {
+					bookmark,
+				},
+			});
+		} else {
+			const bookmark = await Bookmark.destroy({
+				where: { journeyId, userId },
+			});
+			return res.status(200).send({
+				status: success,
+				message: messageSuccess('Delete Bookmark'),
+				data: {
+					bookmark,
+				},
+			});
+		}
+	} catch (err) {
+		errorResponse(err, res);
+	}
+};
+
+//!-------------------------------------------- Delete Journey --------------------------------------------*//
 exports.deleteUserBookmark = async (req, res) => {
 	try {
 		const { id } = req.params;

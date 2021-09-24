@@ -20,6 +20,7 @@ const errorResponse = (err, res) => {
 exports.getJourneys = async (req, res) => {
 	try {
 		const { createdAt } = req.query;
+		const { userId } = req.user;
 		let journeys = null;
 		if (createdAt) {
 			const DateStart = new Date(createdAt).setHours(0, 0, 0, 0);
@@ -38,7 +39,8 @@ exports.getJourneys = async (req, res) => {
 					},
 					{
 						model: Bookmark,
-						attributes: ['id', 'journeyId'],
+						where: { userId },
+						attributes: ['journeyId'],
 					},
 				],
 			});
@@ -56,14 +58,15 @@ exports.getJourneys = async (req, res) => {
 					},
 					{
 						model: Bookmark,
-						attributes: ['id', 'journeyId'],
+						where: { userId },
+						attributes: ['journeyId'],
 					},
 				],
 			});
 		}
 
 		if (journeys.length < 1) {
-			return res.status(204);
+			return res.status(204).send();
 		}
 
 		res.send({
@@ -96,7 +99,7 @@ exports.getJourneysByDate = async (req, res) => {
 		});
 
 		if (journeys.length < 1) {
-			return res.status(204);
+			return res.status(204).send();
 		}
 
 		res.send({
@@ -168,7 +171,7 @@ exports.getUserJourneys = async (req, res) => {
 		});
 
 		if (journeys.length < 1) {
-			return res.status(204);
+			return res.status(204).send();
 		}
 
 		res.send({

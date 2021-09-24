@@ -10,7 +10,7 @@ module.exports = (sequelize, DataTypes) => {
 		static associate(models) {
 			// define association here
 			Journey.belongsTo(models.User, { foreignKey: 'userId' });
-			Journey.hasOne(models.Bookmark, { foreignKey: 'journeyId' });
+			Journey.hasMany(models.Bookmark, { foreignKey: 'journeyId' });
 		}
 	}
 	Journey.init(

@@ -23,6 +23,7 @@ exports.register = async (req, res) => {
 			email: Joi.string().email().required(),
 			password: Joi.string().min(6).required(),
 			phone: Joi.string().min(10).required(),
+			address: Joi.string().min(10).required(),
 		});
 
 		const { error } = schema.validate(body, { abortEarly: false });
