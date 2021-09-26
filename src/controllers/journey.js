@@ -20,48 +20,51 @@ const errorResponse = (err, res) => {
 exports.getJourneys = async (req, res) => {
 	try {
 		const { createdAt } = req.query;
-		const { userId } = req.user;
+		const { search } = req.query;
 		let journeys = null;
 		if (createdAt) {
 			const DateStart = new Date(createdAt).setHours(0, 0, 0, 0);
 			const DateEnd = new Date(createdAt).setHours(23, 59, 59, 999);
 			journeys = await Journey.findAll({
-				where: { createdAt: { [Op.between]: [DateStart, DateEnd] } },
+				where: { status: true, createdAt: { [Op.between]: [DateStart, DateEnd] } },
 				attributes: {
 					exclude: ['updatedAt'],
 				},
-				include: [
-					{
-						model: User,
-						attributes: {
-							exclude: ['password', 'createdAt', 'updatedAt'],
-						},
+				include: {
+					model: User,
+					attributes: {
+						exclude: ['password', 'createdAt', 'updatedAt'],
 					},
-					{
-						model: Bookmark,
-						where: { userId },
-						attributes: ['journeyId'],
+				},
+				order: [['createdAt', 'DESC']],
+			});
+		} else if (search) {
+			journeys = await Journey.findAll({
+				where: { title: { [Op.substring]: search }, status: true },
+				attributes: {
+					exclude: ['updatedAt'],
+				},
+				include: {
+					model: User,
+					attributes: {
+						exclude: ['password', 'createdAt', 'updatedAt'],
 					},
-				],
+				},
+				order: [['createdAt', 'DESC']],
 			});
 		} else {
 			journeys = await Journey.findAll({
+				where: { status: true },
 				attributes: {
 					exclude: ['updatedAt'],
 				},
-				include: [
-					{
-						model: User,
-						attributes: {
-							exclude: ['password', 'createdAt', 'updatedAt'],
-						},
+				include: {
+					model: User,
+					attributes: {
+						exclude: ['password', 'createdAt', 'updatedAt'],
 					},
-					{
-						model: Bookmark,
-						where: { userId },
-						attributes: ['journeyId'],
-					},
-				],
+				},
+				order: [['createdAt', 'DESC']],
 			});
 		}
 
@@ -168,6 +171,7 @@ exports.getUserJourneys = async (req, res) => {
 					exclude: ['password', 'createdAt', 'updatedAt'],
 				},
 			},
+			order: [['createdAt', 'DESC']],
 		});
 
 		if (journeys.length < 1) {
@@ -205,6 +209,47 @@ exports.addJourney = async (req, res) => {
 
 //*-------------------------------------------- Update Journey --------------------------------------------*//
 exports.updateJourney = async (req, res) => {
+	try {
+		const { body } = req;
+		const { id } = req.params;
+
+		const isJourneyExist = await Journey.findOne({
+			where: {
+				id,
+			},
+		});
+		if (!isJourneyExist) {
+			return res.status(400).send({
+				status: failed,
+				message: messageEmpty,
+				data: {
+					journey: [],
+				},
+			});
+		} else {
+			await Journey.update({ ...body, thumbnail: req.file.path }, { where: { id } });
+			const updatedJourney = await Journey.findOne({
+				where: { id },
+				attributes: {
+					exclude: ['updatedAt'],
+				},
+			});
+
+			res.send({
+				status: success,
+				message: messageSuccess('Update', id),
+				data: {
+					journey: updatedJourney,
+				},
+			});
+		}
+	} catch (err) {
+		return errorResponse(err, res);
+	}
+};
+
+//*-------------------------------------------- Update Journey No File --------------------------------------------*//
+exports.updateJourneyNF = async (req, res) => {
 	try {
 		const { body } = req;
 		const { id } = req.params;

@@ -23,7 +23,7 @@ exports.getUserBookmarks = async (req, res) => {
 			where: {
 				userId: id,
 			},
-			attributes: ['id', 'journeyId'],
+			attributes: ['id'],
 			include: {
 				model: Journey,
 				attributes: {
@@ -31,11 +31,10 @@ exports.getUserBookmarks = async (req, res) => {
 				},
 				include: {
 					model: User,
-					attributes: {
-						exclude: ['password', 'createdAt', 'updatedAt'],
-					},
+					attributes: ['fullName', 'avatar'],
 				},
 			},
+			order: [['createdAt', 'DESC']],
 		});
 
 		if (bookmarks.length < 1) {
