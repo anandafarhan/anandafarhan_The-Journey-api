@@ -20,11 +20,13 @@ const {
 	addOrDeleteUserBookmark,
 	getUserBookmarksId,
 } = require('../controllers/bookmark');
+const { updateUser } = require('../controllers/user');
 
 //* --------------------------  AUTH  ---------------------------- *//
 router.post('/auth/register', register);
 router.post('/auth/login', login);
 router.get('/auth', auth, checkAuth);
+router.patch('/user', auth, uploadFile('avatar'), updateUser);
 
 //* -----------------------  JOURNEY ROUTE  ------------------------- *//
 router.get('/journeys', getJourneys);
